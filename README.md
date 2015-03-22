@@ -23,6 +23,12 @@ Generate randomly data:
 python data/generate_data.py > data/vec
 ```
 
+or
+
+```
+make generate_date
+```
+
 
 Program usage
 -------------
