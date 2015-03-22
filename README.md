@@ -11,9 +11,9 @@ Install
 
 Get and Compile (you need boost):
 
-``
+```
 git clone https://github.com/mrouvier/movMF
-cd tsne
+cd movMF
 make
 ```
 
