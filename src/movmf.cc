@@ -26,6 +26,20 @@ class vmf {
 
 };
 
+
+double lengthNorm(Eigen::VectorXd l) {
+
+    double c = 0;
+
+    for(int i = 0; i < l.size(); i++) {
+        c += l[i]*l[i];    
+    }
+
+    return sqrt(c);
+}
+
+
+
 static inline std::string &ltrim(std::string &s) {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
     return s;
@@ -122,26 +136,21 @@ vector< Eigen::VectorXd > kmeans(boost::unordered_map<string, Eigen::VectorXd> h
         cerr<< "Objective function : "<< obj_fct/h.size() << endl;
 
         for(int i = 0; i < nb_cluster; i++) {
-            cout<< "NEW VALUES : "<< new_values[i] <<endl;
-            points[ i ] = new_points[i] / (double)new_values[i];
+            if(new_values[i] == 0) {
+                boost::unordered_map<string, Eigen::VectorXd>::iterator random_it = h.begin();
+                std::advance(random_it, rnd(rng) );
+                points[ i ] = random_it->second;
+            }
+            else {
+                points[ i ] = new_points[i] / (double)new_values[i];
+                points[ i ] /= lengthNorm( points[ i ] );
+            }
         }
 
     }
 
     return points;
 }
-
-double lengthNorm(Eigen::VectorXd l) {
-
-    double c = 0;
-
-    for(int i = 0; i < l.size(); i++) {
-        c += l[i]*l[i];    
-    }
-
-    return sqrt(c);
-}
-
 
 boost::unordered_map<string, Eigen::VectorXd> normalize(boost::unordered_map<string, Eigen::VectorXd> h_x) {
 
@@ -165,18 +174,13 @@ double logbesseli(double nu, double x) {
 
 
 
-void movmf(boost::unordered_map<string, Eigen::VectorXd> h, int nb_cluster, int nb_iteration) {
+vector< vmf > movmf(boost::unordered_map<string, Eigen::VectorXd> h, int nb_cluster, int nb_iteration) {
     int size = h.begin()->second.size();
-    int diff = 1;
-    double epsilon = 0.0001;
-    double value = 100;
-    double kappaMax = 100.0;
-    double kappaMin = 1.0;
 
-    vector< Eigen::VectorXd > pt = kmeans(h, nb_cluster, 4);
+    vector< Eigen::VectorXd > pt = kmeans(h, nb_cluster, 2);
     vector< vmf > mixture( nb_cluster );
     for(int i = 0; i < nb_cluster; i++) {
-        mixture[i].kappa = 1.0;
+        mixture[i].kappa = 200.0;
         mixture[i].alpha = (double)1.0/(double)nb_cluster;
         mixture[i].mu = pt[i];
 
@@ -198,7 +202,7 @@ void movmf(boost::unordered_map<string, Eigen::VectorXd> h, int nb_cluster, int 
         for(boost::unordered_map<string, Eigen::VectorXd>::iterator iter = h.begin(); iter != h.end(); iter++) {
             double somme = 0;
             for(int i = 0; i < nb_cluster; i++) {
-                double temp =  ( ( iter->second.transpose() * mixture[i].mu * mixture[i].kappa )[0]  + logNormalize[i]  ) / 100;
+                double temp =  ( ( iter->second.transpose() * mixture[i].mu * mixture[i].kappa )[0]  + logNormalize[i]  ) ;
                 logProbMat[iter->first].push_back( temp );
                 //cerr<< temp << " " << exp( temp ) <<endl;
                 logSum[iter->first] += exp( temp );
@@ -234,18 +238,58 @@ void movmf(boost::unordered_map<string, Eigen::VectorXd> h, int nb_cluster, int 
 
 
     }
-
+/*
+    for(int i = 0; i < mixture.size(); i++) {
+        cout<<i<<endl;
+        cout<<mixture[i].alpha<<endl;
+        cout<<mixture[i].kappa<<endl;
+    }
+*/
+    return mixture;
 
 }
+
+
+void loglikelihood(vector<vmf> mixture, Eigen::VectorXd x) {
+
+    int size = x.size();
+    vector<double> logProbMat;
+    double logSum = 0;
+
+    for(int i = 0; i < mixture.size(); i++) {
+        double logNormalize = log( mixture[i].alpha ) + (size/2-1)*log( mixture[i].kappa ) - (size/2) * log(2*3.1416) - logbesseli(size/2-1, mixture[i].kappa );
+        double temp =  ( ( x.transpose() * mixture[i].mu * mixture[i].kappa )[0]  + logNormalize  ) ;
+        logProbMat.push_back( temp );
+        logSum += exp( temp );
+    }
+
+    logSum = log( logSum );
+    cout<<logSum<<" ( ";
+    for(int i = 0; i < mixture.size(); i++) {
+        logProbMat[i] -= logSum;
+        double t = exp(logProbMat[i]);
+        if(t<1.0e-20) t = 0;
+        cout<<t<<" ";
+    }
+    cout<<")"<<endl;
+
+}
+ 
 
 
 int main(int argc, char** argv) {
 
     string train = argv[1];
+
     boost::unordered_map<string, Eigen::VectorXd> h_x = read_embedding_file(train);
     h_x = normalize(h_x);
 
-    movmf(h_x, 512, 20);
+    vector<vmf> mixture = movmf(h_x, 256, 5);
+
+    for(boost::unordered_map<string, Eigen::VectorXd>::iterator iter = h_x.begin(); iter != h_x.end(); iter++) {
+        cout<<iter->first<<" ";
+        loglikelihood(mixture, iter->second);
+    }
 
     return 0;
 }
