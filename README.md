@@ -33,7 +33,21 @@ make generate_date
 Program usage
 -------------
 
+To train a statistical mixture model :
+
 ```
-./bin/movmf data/vec
+./bin/movmf_train --nb_mixture 128 --nb_iteration_em 10  --train data/vec --save mixture.txt
 ```
+
+where *nb_mixture* is the number of mixture, *nb_iteration_em* is the number of iteration of Exepctation Maximization (algorithm used to train the mixture model), *train* is the training file and *save* is a save file of mixture model.
+
+
+To test the mixture model :
+
+
+```
+./bin/movmf_test data/vec mixture.txt
+```
+
+The program indicate for a mixture model the log likelihood of each vector.
 
