@@ -1,13 +1,19 @@
+BOOST_LIB=/storage/raid1/homedirs/mickael.rouvier/appli/local/lib/
+BOOST_INCLUDE=/storage/raid1/homedirs/mickael.rouvier/appli/local/include/
+
+#BOOST_LIB=/opt/local/lib
+#BOOST_INCLUDE=/opt/local/include
+
 all:movmf_train movmf_test movmf_similar
 
 movmf_train:src/movmf_train.cc
-	g++ -O3 -o bin/movmf_train src/movmf_train.cc -Ieigen3/ -Isrc/ -I/opt/local/include/  -L/opt/local/lib/ -lboost_program_options-mt
+	g++ -O3 -g -o bin/movmf_train src/movmf_train.cc -Ieigen3/ -Isrc/ -I${BOOST_INCLUDE}  -L${BOOST_LIB} -lboost_program_options
 
 movmf_test:src/movmf_test.cc
-	g++ -O3 -o bin/movmf_test src/movmf_test.cc -Ieigen3/ -Isrc/ -I/opt/local/include/
+	g++ -O3 -o bin/movmf_test src/movmf_test.cc -Ieigen3/ -Isrc/ -I${BOOST_INCLUDE}
 
 movmf_similar:src/movmf_similar.cc
-	g++ -O3 -o bin/movmf_similar src/movmf_similar.cc -Ieigen3/ -Isrc/ -I/opt/local/include/
+	g++ -O3 -o bin/movmf_similar src/movmf_similar.cc -Ieigen3/ -Isrc/ -I${BOOST_INCLUDE}
 
 generate_data:
 	python data/generate_data.py > data/vec

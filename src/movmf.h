@@ -243,7 +243,7 @@ double logbesseli(double nu, double x) {
 
 vector< vmf > movmf(boost::unordered_map<string, Eigen::VectorXd> h, boost::unordered_map<string, Eigen::VectorXd> h_point, int nb_cluster, int nb_iteration_kmeans, int nb_iteration_em) {
     int size = h.begin()->second.size();
-    if(h_point.size() == 0) { nb_cluster = h_point.size(); }
+    if(h_point.size() != 0) { nb_cluster = h_point.size(); }
 
     vector< vmf > mixture;
 
