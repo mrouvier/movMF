@@ -15,6 +15,11 @@
 using namespace boost;
 using namespace std;
 
+//TODO
+// class mixture create the class
+// class mixture add the value alpha in mixture and remove it in vmf
+// class vmf add function operator= (and all the fucking stuff for the copy)
+
 class vmf {
     public:
         double kappa;
@@ -306,7 +311,10 @@ vector< vmf > movmf(boost::unordered_map<string, Eigen::VectorXd> h, boost::unor
             mu = mu / lengthNorm( mu );
             kappa = ( rbar * size - rbar*rbar*rbar ) / ( 1 - rbar*rbar );
 
-            mixture[i] = vmf( alpha, kappa, mu);
+            //mixture[i] = vmf( alpha, kappa, mu);
+            mixture[i].alpha = alpha;
+            mixture[i].kappa = kappa;
+            mixture[i].mu = mu;
         }
 
 

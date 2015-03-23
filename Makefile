@@ -31,3 +31,6 @@ test:
 
 similar:
 	./bin/movmf_similar data/vec mixture.txt
+
+clean:
+	rm bin/movmf_train bin/movmf_test bin/movmf_similar
